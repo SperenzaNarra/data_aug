@@ -75,7 +75,7 @@ def generate(idx:int, total:int, save_path:Path, image:ndarray, combination:List
             buffer = list(tqdm(p.imap_unordered(saveImg, buffer), total=len(buffer), desc="save"))
 
 if __name__ == "__main__":
-    parser = ArgumentParser()
+    parser = ArgumentParser(description="generate augmented images")
     parser.add_argument("-img", "--images", required=True, nargs='+')
     parser.add_argument("--save", default="augmented")
     parser.add_argument("--width", type=int, default=640)
