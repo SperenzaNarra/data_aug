@@ -14,6 +14,7 @@ def crawler(path:Path):
                 yield images_type.name, image
 
 def readCache(model:defaultdict):
+    print("reading images.cache")
     f = open("images.cache", "rb")
     while True:
         try:

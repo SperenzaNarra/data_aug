@@ -1,8 +1,7 @@
 from argparse import ArgumentParser
 from itertools import combinations
-from multiprocessing import Pool
+from multiprocessing import Pool, current_process
 from pathlib import Path
-from time import time, time_ns
 from typing import List, Tuple
 
 import cv2
@@ -35,11 +34,13 @@ def getImage(path:str, width:int, height=int):
     image = cv2.resize(image, (width, height))
     return Path(path).stem, image
 
-def augment(args:Tuple[Path, iaa.Sequential, ndarray]):
-    ia.seed(time_ns())
-    save_path, affine, image = args
-    images_aug = affine(image=image)
-    return save_path, images_aug
+def augment(save_paths:List[Path], affine:iaa.Affine, images:List[ndarray]):
+    ia.seed(current_process().pid)
+    images_aug = affine(images=images)
+    buffer = []
+    for path, image in tqdm(zip(save_paths, images_aug), total=len(images_aug), desc="generating"):
+        buffer.append((path, image))
+    return buffer
 
 def saveImg(args:Tuple[Path, ndarray]):
     path, img = args
@@ -63,15 +64,18 @@ def generate(idx:int, total:int, save_path:Path, image:ndarray, combination:List
     save_path.mkdir(parents=True, exist_ok=True)
  
     # start
-    buffer = []
+    images = []
+    paths = []
     for i in range(total_per_type):
         save = save_path/f"{i:05}.png"
         if not save.exists():
-            buffer.append((save, sequence, image))
+            images.append(image)
+            paths.append(save)
+            
     
-    if buffer:            
+    if images:
         with Pool() as p:
-            buffer = list(tqdm(p.imap_unordered(augment, buffer), total=len(buffer), desc="generate"))
+            buffer = augment(paths, sequence, images)
             buffer = list(tqdm(p.imap_unordered(saveImg, buffer), total=len(buffer), desc="save"))
 
 if __name__ == "__main__":
