@@ -42,6 +42,7 @@ def cache(path:Path):
             continue
         name = str(image)
         img = cv2.imread(name)
+        img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
         model[image_type][name] = img
         pickle.dump((image_type, name, img), f)
         
