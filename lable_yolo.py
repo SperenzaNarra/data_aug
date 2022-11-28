@@ -55,7 +55,7 @@ if __name__ == "__main__":
     model = cache(Path(args.path))
     CHOICES = list(model.keys())
     name_to_index:Dict[str, int] = {name:i for i, name in enumerate(CHOICES)}
-    assert len(CHOICES) >= max(args.type), f"invalid type, you need to choose a number between 0 and {len(CHOICES)} for {CHOICES}"
+    assert not args.type or len(CHOICES) >= max(args.type), f"invalid type, you need to choose a number between 0 and {len(CHOICES)} for {CHOICES}"
     
     if args.type:
         CHOICES = [CHOICES[i-1] for i in args.type]
