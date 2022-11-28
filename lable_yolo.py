@@ -75,7 +75,7 @@ if __name__ == "__main__":
     TOTAL = args.total_per_type
     
     IMAGES = Path(args.save)/"images"
-    LABELS = Path(args.save)/"lables"
+    LABELS = Path(args.save)/"labels"
     IMAGES.mkdir(parents=True, exist_ok=True)
     LABELS.mkdir(exist_ok=True)
     
