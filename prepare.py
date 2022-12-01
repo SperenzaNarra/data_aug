@@ -22,7 +22,7 @@ name_to_fn = {
     "multiply" : data_aug.multiply,
 }
 
-tags = ["spatter","gaussian","motion","addictive","multiply","shear", "rotate"]
+tags = list(name_to_fn.keys())
 
 def getCombinations(l):
     for r in range(1, len(l)):
@@ -85,6 +85,8 @@ if __name__ == "__main__":
     parser.add_argument("--width", type=int, default=640)
     parser.add_argument("--height", type=int, default=640)
     parser.add_argument("-t", "--total-per-type", type=int, default=100)
+    parser.add_argument("--ignore", nargs="+", help=",".join(tags))
+    parser.add_argument("--include", nargs="+", help=",".join(tags))
     args = parser.parse_args()
     
     raw_paths = args.images
@@ -92,10 +94,26 @@ if __name__ == "__main__":
     
     save_path = Path(args.save)
     save_path.mkdir(exist_ok=True)
+
+    ignores = args.ignores
+    includes = args.includes
+    if not includes:
+        includes = tags
     
     total = len([0 for _ in getCombinations(tags)]) * len(raws) - 1
     i = 0
     for combination in getCombinations(tags):
+        for ignore in ignores:
+            if ignore in combination:
+                continue
+        
+        should_skip = True
+        for include in includes:
+            if include in combination:
+                should_skip = False
+        if should_skip:
+            continue
+
         for name, image in raws:
             save = save_path/"_".join(combination)/name
             generate(i, total, save, image, list(combination), args)
