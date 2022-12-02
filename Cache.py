@@ -4,6 +4,7 @@ from collections import defaultdict
 from pathlib import Path
 from time import time
 import cv2
+from multiprocessing import Pool
 from tqdm import tqdm
 
 def crawler(path:Path):
@@ -12,6 +13,12 @@ def crawler(path:Path):
         for images_type in images.iterdir():
             for image in images_type.iterdir():
                 yield images_type.name, image
+
+def load(args):
+    name, image_type = args
+    img = cv2.imread(name)
+    img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+    return name, image_type, img
 
 def readCache(model:defaultdict, save:Path):
     print("reading", save)
@@ -37,14 +44,17 @@ def cache(path:Path,save:Path):
     else:
         f = open(str(save), "wb")
         
+    images = []
     for image_type, image in crawler(path):
-        if str(image) in model[image_type]:
-            continue
-        name = str(image)
-        img = cv2.imread(name)
-        img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-        model[image_type][name] = img
-        pickle.dump((image_type, name, img), f)
+        if not str(image) in model[image_type]:
+            images.append((str(image), image_type))
+            
+    if images:
+        with Pool() as p:
+            results = list(tqdm(p.imap_unordered(load, images), total=len(images), desc=str(path)))
+        for name, image_type, img in results:
+            model[image_type][name] = img
+            pickle.dump((image_type, name, img), f)
         
     print("total cache used", "%.2f"%(time()-start), "seconds")
     f.close()

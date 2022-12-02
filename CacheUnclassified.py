@@ -3,7 +3,7 @@ from argparse import ArgumentParser
 from pathlib import Path
 from time import time
 from typing import Dict
-
+from multiprocessing import Pool
 import cv2
 from numpy import ndarray
 from tqdm import tqdm
@@ -28,6 +28,11 @@ def readCache(model:dict, save:Path):
             raise e
     f.close()
 
+def load(name:str):
+    img = cv2.imread(name)
+    img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+    return name, img
+
 def cache(path:Path,save:Path):
     start = time()
     model:Dict[str, ndarray] = {}
@@ -39,14 +44,17 @@ def cache(path:Path,save:Path):
     else:
         f = open(str(save), "wb")
         
+    images = []
     for image in crawler(path):
-        if str(image) in model:
-            continue
-        name = str(image)
-        img = cv2.imread(name)
-        img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-        model[name] = img
-        pickle.dump((name, img), f)
+        if not str(image) in model:
+            images.append(str(image))
+    
+    if images:
+        with Pool() as p:
+            buffer = list(tqdm(p.imap_unordered(load, images), total=len(images), desc=str(path)))
+        for name, img in buffer:
+            model[name] = img
+            pickle.dump((name, img), f)
         
     print("total cache used", "%.2f"%(time()-start), "seconds")
     f.close()
