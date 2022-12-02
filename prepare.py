@@ -95,17 +95,19 @@ if __name__ == "__main__":
     save_path = Path(args.save)
     save_path.mkdir(exist_ok=True)
 
-    ignores = args.ignores
-    includes = args.includes
+    ignores = args.ignore
+    includes = args.include
     if not includes:
         includes = tags
     
     total = len([0 for _ in getCombinations(tags)]) * len(raws) - 1
     i = 0
+    
     for combination in getCombinations(tags):
-        for ignore in ignores:
-            if ignore in combination:
-                continue
+        if ignores:
+            for ignore in ignores:
+                if ignore in combination:
+                    continue
         
         should_skip = True
         for include in includes:
