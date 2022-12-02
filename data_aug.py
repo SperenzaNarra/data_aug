@@ -3,8 +3,8 @@ from typing import List
 from imgaug import augmenters as iaa
 from numpy import ndarray
 
-rotate          = iaa.Rotate((-180, 180))
-shear           = iaa.ShearX((-20, 20))
+rotate          = iaa.Rotate((-40, 40))
+shear           = iaa.ShearX((-10, 10))
 gaussian        = iaa.GaussianBlur(sigma=(0.0, 4.0))
 motion          = iaa.MotionBlur(k=15)
 addictive       = iaa.AdditiveGaussianNoise(scale=(0, 0.2*255))

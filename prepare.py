@@ -34,11 +34,11 @@ def getImage(path:str, width:int, height=int):
     image = cv2.resize(image, (width, height))
     return Path(path).stem, image
 
-def augment(save_paths:List[Path], affine:iaa.Affine, images:List[ndarray]):
+def augment(save_paths:List[Path], affine:iaa.Affine, images:List[ndarray], image_type:str):
     ia.seed(current_process().pid)
     images_aug = affine(images=images)
     buffer = []
-    for path, image in tqdm(zip(save_paths, images_aug), total=len(images_aug), desc="generating"):
+    for path, image in tqdm(zip(save_paths, images_aug), total=len(images_aug), desc=image_type):
         buffer.append((path, image))
     return buffer
 
@@ -47,7 +47,7 @@ def saveImg(args:Tuple[Path, ndarray]):
     im = Image.fromarray(img)
     im.save(str(path))
 
-def generate(idx:int, total:int, save_path:Path, image:ndarray, combination:List[str], args):
+def generate(save_path:Path, image:ndarray, combination:List[str], args):
     total_per_type:int = args.total_per_type
     
     if "spatter" in combination:
@@ -55,12 +55,7 @@ def generate(idx:int, total:int, save_path:Path, image:ndarray, combination:List
         sequence = data_aug.spatter_generator(*[name_to_fn[affine] for affine in combination])
     else:
         sequence = iaa.Sequential([name_to_fn[affine] for affine in combination])
-        
-    # init path
-    length = len(str(total))
-    idx = str(idx)
-    idx = "0"*(length-len(idx))+idx
-    print(f"{idx}/{total} {save_path}")
+
     save_path.mkdir(parents=True, exist_ok=True)
  
     # start
@@ -75,7 +70,7 @@ def generate(idx:int, total:int, save_path:Path, image:ndarray, combination:List
     
     if images:
         with Pool() as p:
-            buffer = augment(paths, sequence, images)
+            buffer = augment(paths, sequence, images, save_path.name)
             buffer = list(tqdm(p.imap_unordered(saveImg, buffer), total=len(buffer), desc="save"))
 
 if __name__ == "__main__":
@@ -100,10 +95,18 @@ if __name__ == "__main__":
     if not includes:
         includes = tags
     
-    total = len([0 for _ in getCombinations(tags)]) * len(raws) - 1
+    total = len([0 for _ in getCombinations(tags)]) - 1
     i = 0
     
     for combination in getCombinations(tags):
+        save = save_path/"_".join(combination)
+
+        length = len(str(total))
+        idx = str(i)
+        idx = "0"*(length-len(idx))+idx
+        print(f"{idx}/{total} {save}")
+        i+=1
+
         if ignores:
             for ignore in ignores:
                 if ignore in combination:
@@ -117,6 +120,4 @@ if __name__ == "__main__":
             continue
 
         for name, image in raws:
-            save = save_path/"_".join(combination)/name
-            generate(i, total, save, image, list(combination), args)
-            i += 1
+            generate(save/name, image, list(combination), args)
