@@ -53,7 +53,7 @@ def cache(path:Path,save:Path):
     return model
 
 if __name__ == "__main__":
-    parser = ArgumentParser("used to save unclassified images")
+    parser = ArgumentParser(description="used to save unclassified images")
     parser.add_argument("path")
     parser.add_argument("save")
     args = parser.parse_args()
