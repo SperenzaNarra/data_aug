@@ -9,7 +9,10 @@ from PIL import Image
 
 AFFINE = A.Affine(rotate=[-20, 20], shear=[-20, 20])
 CROP = A.RandomCrop(width=450, height=450)
-AUGMENTOR = A.Compose([AFFINE, CROP], bbox_params=A.BboxParams(format='yolo'))
+AUGMENTOR = A.Compose([
+    AFFINE, 
+    # CROP
+    ], bbox_params=A.BboxParams(format='yolo'))
 
 def augment(image_path:Path):
     global AUGMENTOR, RESULT

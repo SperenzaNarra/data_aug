@@ -97,7 +97,7 @@ if __name__ == "__main__":
     name_to_index:Dict[str, int] = {name:i for i, name in enumerate(CHOICES)}
 
     # rewrite index
-    name_to_index = {"red":80, "green":80, "TipNTellSafe":81, "TipNTellError":81}
+    # name_to_index = {"red":80, "green":80, "TipNTellSafe":81, "TipNTellError":81}
 
     assert not args.type or len(CHOICES) >= max(args.type), f"invalid type, you need to choose a number between 0 and {len(CHOICES)} for {CHOICES}"
     
