@@ -3,7 +3,7 @@ from typing import List
 from imgaug import augmenters as iaa
 from numpy import ndarray
 
-rotate          = iaa.Rotate((-40, 40))
+rotate          = iaa.Rotate((-40, -20))
 shear           = iaa.ShearX((-10, 10))
 gaussian        = iaa.GaussianBlur(sigma=(0.0, 4.0))
 motion          = iaa.MotionBlur(k=15)

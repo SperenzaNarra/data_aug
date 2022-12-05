@@ -83,6 +83,7 @@ if __name__ == "__main__":
     parser.add_argument("--ignore", nargs="+", help=",".join(tags))
     parser.add_argument("--include", nargs="+", help=",".join(tags))
     args = parser.parse_args()
+
     
     raw_paths = args.images
     raws = [getImage(image, args.width, args.height) for image in raw_paths]
@@ -107,10 +108,14 @@ if __name__ == "__main__":
         print(f"{idx}/{total} {save}")
         i+=1
 
+        should_skip = False
         if ignores:
             for ignore in ignores:
                 if ignore in combination:
-                    continue
+                    should_skip = True
+                    break
+        if should_skip:
+            continue
         
         should_skip = True
         for include in includes:
